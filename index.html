@@ -14,22 +14,20 @@
     }
     canvas { display: block; width: 100vw; height: 100vh; }
 
-    /* Верхний счётчик перехватов */
     #top-hud {
       position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-      background: rgba(255, 255, 255, 0.75); border-radius: 6px;
-      padding: 4px 14px; font-size: 20px; font-weight: bold; color: #222;
+      background: rgba(255, 255, 255, 0.8); border-radius: 6px;
+      padding: 4px 12px; font-size: 16px; font-weight: bold; color: #222;
       z-index: 10; pointer-events: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      white-space: nowrap;
     }
 
-    /* Левая панель кнопок */
     .left-panel {
-      position: absolute; top: 0; left: 0; width: 24%; height: 100%;
+      position: absolute; top: 0; left: 0; width: 21%; height: 100%;
       display: flex; flex-direction: column; z-index: 10;
     }
-    /* Правая панель кнопок */
     .right-panel {
-      position: absolute; top: 0; right: 0; width: 24%; height: 100%;
+      position: absolute; top: 0; right: 0; width: 21%; height: 100%;
       display: flex; flex-direction: column; z-index: 10;
     }
 
@@ -37,27 +35,28 @@
       flex: 1; background: rgba(255, 255, 255, 0.28);
       border: 1px solid rgba(255, 255, 255, 0.55);
       display: flex; align-items: center; justify-content: center;
-      font-size: 16px; font-weight: bold; color: #111;
-      text-align: center; padding: 5px; touch-action: manipulation;
+      font-size: 12px; font-weight: bold; color: #111;
+      text-align: center; padding: 2px; touch-action: manipulation;
+      word-break: break-word;
     }
     .ctrl-btn:active, .ctrl-btn.active {
       background: rgba(255, 255, 255, 0.65);
     }
 
-    /* Нижняя панель (Меню + Замедление) */
     .bottom-bar {
-      position: absolute; bottom: 0; left: 24%; right: 24%; height: 42px;
-      display: flex; align-items: center; justify-content: center; gap: 10px;
+      position: absolute; bottom: 8px; left: 22%; right: 22%; height: 38px;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
       z-index: 10;
     }
     #btn-slow {
-      background: rgba(255, 255, 255, 0.75); border: 1px solid #999;
-      padding: 6px 14px; border-radius: 4px; font-size: 14px; font-weight: bold;
+      background: rgba(255, 255, 255, 0.85); border: 1px solid #999;
+      padding: 6px 10px; border-radius: 4px; font-size: 12px; font-weight: bold;
     }
     #btn-slow.active { background: #ffd700; }
     #btn-save {
       background: rgba(46, 139, 87, 0.9); color: #fff; border: none;
-      padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold;
+      padding: 6px 10px; border-radius: 4px; font-size: 12px; font-weight: bold;
+      white-space: nowrap;
     }
   </style>
 </head>
@@ -68,7 +67,7 @@
   <div class="left-panel">
     <div class="ctrl-btn" id="btn-release">Отпустить</div>
     <div class="ctrl-btn active" id="btn-stick">Прилипание</div>
-    <div class="ctrl-btn" id="btn-reset" style="flex: 0.5;">Сброс</div>
+    <div class="ctrl-btn" id="btn-reset" style="flex: 0.45;">Сброс</div>
   </div>
 
   <div class="right-panel">
@@ -98,32 +97,29 @@
     window.addEventListener('resize', resize);
     resize();
 
-    // Состояние игры
     let score = 0;
     let autoStick = true;
     let slowMo = false;
-    let pose = 'straight'; // 'arch' (Прогиб), 'tuck' (Группировка), 'straight' (Прямое тело)
+    let pose = 'straight';
 
-    // Турники (перекладины)
     const bars = [];
     function initBars() {
       bars.length = 0;
-      const startX = canvas.width * 0.35;
+      const startX = canvas.width * 0.45;
       const startY = canvas.height * 0.38;
       bars.push({ x: startX, y: startY, id: 0 });
-      for (let i = 1; i < 40; i++) {
+      for (let i = 1; i < 60; i++) {
         bars.push({
-          x: startX + i * 260 + (Math.random() - 0.5) * 60,
-          y: canvas.height * (0.25 + Math.random() * 0.35),
+          x: startX + i * 210 + (Math.random() - 0.5) * 40,
+          y: canvas.height * (0.28 + Math.random() * 0.25),
           id: i
         });
       }
     }
 
-    // Гимнаст
     const gymnast = {
       attachedBar: null,
-      angle: Math.PI / 2, // Вниз головой или висит
+      angle: 0.2,
       angVel: 0,
       x: 0,
       y: 0,
@@ -138,16 +134,15 @@
       initBars();
       score = 0;
       document.getElementById('score').innerText = score;
-      gymnast.attachedBar = bars;
-      gymnast.angle = 0.2;
-      gymnast.angVel = 0.06;
-      gymnast.x = bars.x;
-      gymnast.y = bars.y;
+      gymnast.attachedBar = bars[0];
+      gymnast.angle = 0.35;
+      gymnast.angVel = 0.05;
+      gymnast.x = bars[0].x;
+      gymnast.y = bars[0].y;
       gymnast.lastBarId = 0;
       setPose('straight');
     }
 
-    // Управление позами
     function setPose(newPose) {
       pose = newPose;
       document.getElementById('btn-arch').classList.toggle('active', pose === 'arch');
@@ -155,7 +150,6 @@
       document.getElementById('btn-straight').classList.toggle('active', pose === 'straight');
     }
 
-    // Привязка кнопок
     const bindTouch = (id, fn) => {
       const el = document.getElementById(id);
       el.addEventListener('touchstart', (e) => { e.preventDefault(); fn(); });
@@ -165,7 +159,6 @@
     bindTouch('btn-release', () => {
       if (gymnast.attachedBar) {
         const L = getArmBodyLength();
-        // Линейная скорость при отрыве от турника
         const tangentialSpeed = gymnast.angVel * L;
         gymnast.vx = Math.cos(gymnast.angle) * tangentialSpeed * 1.15;
         gymnast.vy = -Math.sin(gymnast.angle) * tangentialSpeed * 1.15;
@@ -195,45 +188,40 @@
     });
 
     function getArmBodyLength() {
-      if (pose === 'tuck') return 48; // В группировке радиус меньше — крутится быстрее
-      if (pose === 'arch') return 72;
-      return 68;
+      if (pose === 'tuck') return 46;
+      if (pose === 'arch') return 68;
+      return 64;
     }
 
-    // Физика
     function update() {
       const dt = slowMo ? 0.35 : 1.0;
 
       if (gymnast.attachedBar) {
         const bar = gymnast.attachedBar;
-        // Гравитация маятника + раскачка от смены позы (прогиб/группировка)
-        const gravity = 0.0038;
+        const gravity = 0.0042;
         let pump = 0;
-        if (pose === 'arch') pump = 0.0018 * Math.cos(gymnast.angle);
-        if (pose === 'tuck') pump = -0.0015 * Math.sin(gymnast.angle);
+        if (pose === 'arch') pump = 0.0022 * Math.cos(gymnast.angle);
+        if (pose === 'tuck') pump = -0.0018 * Math.sin(gymnast.angle);
 
         gymnast.angVel += (-gravity * Math.sin(gymnast.angle) + pump) * dt;
-        gymnast.angVel *= 0.996; // Минимальное трение
+        gymnast.angVel *= 0.996;
         gymnast.angle += gymnast.angVel * dt;
 
         gymnast.x = bar.x;
         gymnast.y = bar.y;
       } else {
-        // Полет в воздухе
-        gymnast.vy += 0.24 * dt; // Сила тяжести
+        gymnast.vy += 0.24 * dt;
         gymnast.x += gymnast.vx * dt;
         gymnast.y += gymnast.vy * dt;
 
-        // В группировке сальто крутится в 2.2 раза быстрее
         const spinMult = pose === 'tuck' ? 2.2 : (pose === 'arch' ? 0.85 : 1.0);
         gymnast.bodyAngle += gymnast.spinVel * spinMult * dt;
 
-        // Проверка захвата следующего турника
         if (autoStick) {
           for (let bar of bars) {
             if (bar.id !== gymnast.lastBarId) {
               const dist = Math.hypot(gymnast.x - bar.x, gymnast.y - bar.y);
-              if (dist < 32) {
+              if (dist < 36) {
                 gymnast.attachedBar = bar;
                 gymnast.lastBarId = bar.id;
                 gymnast.angle = Math.atan2(gymnast.x - bar.x, gymnast.y - bar.y);
@@ -246,59 +234,75 @@
           }
         }
 
-        // Если упал слишком низко — сброс
-        if (gymnast.y > canvas.height + 200) {
+        if (gymnast.y > canvas.height + 220) {
           resetGame();
         }
       }
     }
 
-    // Отрисовка
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Камера следит за гимнастом
       const camX = gymnast.x - canvas.width * 0.45;
-      const camY = (gymnast.y - canvas.height * 0.45) * 0.4;
+      const camY = (gymnast.y - canvas.height * 0.42) * 0.4;
 
       ctx.save();
       ctx.translate(-camX, -camY);
 
-      // Красные конструкции зала на фоне (как на скриншоте)
+      // Красные конструкции зала на фоне
       ctx.fillStyle = '#c84b31';
-      for (let gx = -200; gx < 12000; gx += 320) {
-        ctx.fillRect(gx, -300, 14, 1200);
-        ctx.fillRect(gx, 140, 320, 12);
-        ctx.fillRect(gx, 360, 320, 12);
+      for (let gx = -200; gx < 15000; gx += 260) {
+        ctx.fillRect(gx, -300, 12, 1400);
+        ctx.fillRect(gx, canvas.height * 0.22, 260, 10);
+        ctx.fillRect(gx, canvas.height * 0.55, 260, 10);
       }
 
       // Перекладины (турники)
       bars.forEach(bar => {
-        // Стойка
         ctx.fillStyle = '#e0e0e0';
-        ctx.fillRect(bar.x - 45, bar.y - 6, 45, 12);
-        // Сама перекладина
+        ctx.fillRect(bar.x - 36, bar.y - 5, 36, 10);
         ctx.strokeStyle = '#999';
         ctx.lineWidth = 5;
         ctx.beginPath();
         ctx.moveTo(bar.x, bar.y);
-        ctx.lineTo(bar.x + 28, bar.y + 14);
+        ctx.lineTo(bar.x + 24, bar.y + 12);
         ctx.stroke();
 
-        // Точка захвата
         ctx.fillStyle = bar === gymnast.attachedBar ? '#ffd700' : '#ffffff';
         ctx.beginPath();
         ctx.arc(bar.x, bar.y, 6, 0, Math.PI * 2);
         ctx.fill();
       });
 
-      // Отрисовка гимнаста (серая модель с суставами как на скриншоте)
+      // Отрисовка гимнаста
       ctx.save();
       ctx.translate(gymnast.x, gymnast.y);
       const drawAngle = gymnast.attachedBar ? -gymnast.angle : -gymnast.bodyAngle;
       ctx.rotate(drawAngle);
 
-      ctx.strokeStyle = '#666';
-      ctx.fillStyle = '#777';
+      ctx.strokeStyle = '#555';
+      ctx.fillStyle = '#666';
       ctx.lineCap = 'round';
 
+      if (pose === 'tuck') {
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(0, 0); ctx.lineTo(10, 22);
+        ctx.stroke();
+
+        ctx.lineWidth = 11;
+        ctx.beginPath();
+        ctx.arc(14, 34, 14, 0, Math.PI * 1.5);
+        ctx.stroke();
+
+        ctx.beginPath(); ctx.arc(4, 24, 8, 0, Math.PI * 2); ctx.fill();
+      } else if (pose === 'arch') {
+        ctx.lineWidth = 8;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-4, 28); ctx.stroke();
+        ctx.lineWidth = 11;
+        ctx.beginPath(); ctx.moveTo(-4, 28); ctx.quadraticCurveTo(12, 48, 2, 68); ctx.stroke();
+        ctx.lineWidth = 8;
+        ctx.beginPath(); ctx.moveTo(2, 68); ctx.lineTo(-10, 96); ctx.stroke();
+        ctx.beginPath(); ctx.arc(6, 26, 8, 0, Math.PI * 2); ctx.fill();
+      } else {
+        ctx.lineWidth = 8;
