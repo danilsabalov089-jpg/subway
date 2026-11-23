@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Business Empire Tycoon</title>
   <script src="https://telegram.org"></script>
   <style>
@@ -12,139 +12,123 @@
       padding: 0;
       user-select: none;
       -webkit-user-select: none;
+      -webkit-touch-callout: none;
       -webkit-tap-highlight-color: transparent;
     }
 
-    body {
-      background: radial-gradient(circle at top, #1e293b 0%, #090d16 100%);
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #0b1120;
       color: #f8fafc;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      height: 100vh;
-      height: 100dvh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .app {
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      height: 100vh;
+      height: 100dvh;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
-    /* Верхняя панель */
+    /* Шапка */
     .header {
-      padding: 12px 16px 10px;
-      background: rgba(15, 23, 42, 0.9);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px 14px;
+      background: #111827;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       text-align: center;
-      z-index: 5;
+      flex-shrink: 0;
     }
 
-    .top-actions {
+    .top-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 6px;
     }
 
-    .pill-btn {
-      background: rgba(56, 189, 248, 0.18);
+    .top-btn {
+      background: #1e293b;
       color: #38bdf8;
-      border: 1px solid rgba(56, 189, 248, 0.4);
-      padding: 7px 13px;
-      border-radius: 20px;
-      font-size: 12px;
+      border: 1px solid #334155;
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
     }
-    .pill-btn:active { transform: scale(0.93); }
-    .pill-btn.green {
-      background: rgba(16, 185, 129, 0.22);
+    .top-btn.save {
+      background: #064e3b;
       color: #34d399;
-      border-color: rgba(16, 185, 129, 0.45);
+      border-color: #059669;
     }
 
-    .rank-badge {
-      display: inline-block;
-      background: rgba(251, 191, 36, 0.16);
-      border: 1px solid rgba(251, 191, 36, 0.35);
+    .rank-pill {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.35);
       color: #fbbf24;
-      padding: 4px 12px;
-      border-radius: 14px;
+      padding: 4px 10px;
+      border-radius: 12px;
       font-size: 12px;
       font-weight: 700;
     }
 
     #balance {
-      font-size: 36px;
+      font-size: 38px;
       font-weight: 900;
-      margin: 4px 0;
       color: #ffffff;
-      text-shadow: 0 2px 12px rgba(56, 189, 248, 0.3);
+      line-height: 1.1;
+      margin: 4px 0;
     }
 
-    .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      max-width: 340px;
-      margin: 4px auto 0;
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 4px;
     }
-
-    .stat-box {
-      background: rgba(30, 41, 59, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 10px;
-      padding: 5px 8px;
-      font-size: 11px;
+    .stat-chip {
+      background: #1e293b;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 12px;
       color: #94a3b8;
     }
-    .stat-box b {
-      display: block;
-      font-size: 14px;
-      color: #34d399;
-      margin-top: 1px;
-    }
+    .stat-chip b { color: #34d399; }
 
     /* Центральная зона клика */
-    .tap-area {
+    .center-zone {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       position: relative;
-      padding: 8px;
+      min-height: 210px;
     }
 
-    #turbo-banner {
+    #turbo-tag {
       position: absolute;
-      top: 8px;
+      top: 6px;
       background: linear-gradient(90deg, #f59e0b, #ef4444);
       color: #fff;
       font-size: 12px;
       font-weight: 800;
-      padding: 4px 14px;
-      border-radius: 20px;
-      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.5);
+      padding: 4px 12px;
+      border-radius: 14px;
       display: none;
     }
 
-    .coin-wrapper {
-      width: 186px;
-      height: 186px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, transparent 70%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
     #coin-btn {
-      width: 168px;
-      height: 168px;
+      width: 164px;
+      height: 164px;
       border-radius: 50%;
-      background: radial-gradient(circle at 30% 25%, #38bdf8, #0284c7 60%, #0f172a 100%);
+      background: radial-gradient(circle at 30% 25%, #38bdf8, #0284c7 65%, #0f172a 100%);
       border: 5px solid #7dd3fc;
-      box-shadow:
-        0 12px 35px rgba(2, 132, 199, 0.55),
-        inset 0 6px 14px rgba(255, 255, 255, 0.45),
-        inset 0 -8px 16px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 10px 30px rgba(2, 132, 199, 0.5), inset 0 6px 12px rgba(255,255,255,0.4);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -152,246 +136,269 @@
       cursor: pointer;
       transition: transform 0.05s ease;
     }
+    #coin-btn.active { transform: scale(0.9); }
 
-    #coin-btn:active, #coin-btn.pressed {
-      transform: scale(0.91);
+    .energy-wrap {
+      width: 84%;
+      max-width: 320px;
+      margin-top: 12px;
     }
-
-    /* Полоска энергии */
-    .energy-box {
-      width: 86%;
-      max-width: 340px;
-      margin-top: 14px;
-    }
-    .energy-header {
+    .energy-top {
       display: flex;
       justify-content: space-between;
       font-size: 12px;
       font-weight: 700;
       color: #cbd5e1;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
-    .energy-track {
+    .energy-bar {
       width: 100%;
-      height: 12px;
-      background: #0f172a;
-      border-radius: 8px;
-      padding: 2px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      height: 11px;
+      background: #1e293b;
+      border-radius: 6px;
+      overflow: hidden;
     }
     #energy-fill {
       width: 100%;
       height: 100%;
-      border-radius: 6px;
-      background: linear-gradient(90deg, #0ea5e9, #6366f1, #ec4899);
-      transition: width 0.12s ease-out;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
     }
 
     /* Нижняя панель магазина */
-    .bottom-sheet {
+    .shop {
       height: 46%;
-      background: #131c31;
-      border-top: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 22px 22px 0 0;
+      background: #111827;
+      border-top: 2px solid #1e293b;
+      border-radius: 20px 20px 0 0;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.45);
-      z-index: 5;
+      flex-shrink: 0;
     }
 
     .tabs {
       display: flex;
-      padding: 6px 10px 0;
-      gap: 6px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid #1e293b;
     }
-
-    .tab-btn {
+    .tab {
       flex: 1;
-      padding: 11px 4px;
+      padding: 12px 4px;
       text-align: center;
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
       color: #64748b;
       border-bottom: 3px solid transparent;
       cursor: pointer;
     }
-    .tab-btn.active {
+    .tab.active {
       color: #38bdf8;
       border-bottom-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.05);
     }
 
-    .cards-scroll {
+    .list {
       flex: 1;
       overflow-y: auto;
-      padding: 10px 14px 20px;
+      padding: 10px 12px 24px;
       display: flex;
       flex-direction: column;
       gap: 8px;
       -webkit-overflow-scrolling: touch;
     }
 
-    .card {
-      background: rgba(30, 41, 59, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+    /* Вся карточка кликабельна */
+    .item-card {
+      background: #1e293b;
+      border: 1px solid #334155;
       border-radius: 14px;
       padding: 10px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
+      cursor: pointer;
+    }
+    .item-card:active {
+      transform: scale(0.98);
+      background: #263349;
     }
 
-    .card-left {
+    .item-left {
       display: flex;
       align-items: center;
       gap: 10px;
-      min-width: 0;
+      pointer-events: none;
     }
-
-    .card-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
+    .item-icon {
+      width: 42px;
+      height: 42px;
       background: #0f172a;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
-      flex-shrink: 0;
+      font-size: 22px;
     }
-
-    .card-title {
+    .item-name {
       font-size: 14px;
       font-weight: 700;
       color: #f8fafc;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
-
-    .card-lvl {
-      font-size: 11px;
-      color: #38bdf8;
-      font-weight: 600;
-    }
-
-    .card-desc {
+    .item-meta {
       font-size: 12px;
       color: #34d399;
       margin-top: 2px;
     }
+    .item-lvl {
+      color: #38bdf8;
+      font-weight: 700;
+    }
 
-    .action-btn {
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
-      color: #fff;
-      border: none;
-      padding: 11px 14px;
+    .price-badge {
+      background: #2563eb;
+      color: #ffffff;
+      padding: 9px 12px;
       border-radius: 10px;
       font-size: 13px;
       font-weight: 800;
-      min-width: 90px;
+      min-width: 84px;
       text-align: center;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
-      flex-shrink: 0;
+      pointer-events: none;
     }
-    .action-btn:active { transform: scale(0.93); }
-    .action-btn.locked {
-      background: #1e293b;
+    .price-badge.locked {
+      background: #0f172a;
       color: #64748b;
       border: 1px solid #334155;
-      box-shadow: none;
     }
-    .action-btn.free {
-      background: linear-gradient(135deg, #10b981, #059669);
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+    .price-badge.free {
+      background: #059669;
     }
 
     /* Вылетающие цифры */
-    .float-text {
+    .pop-num {
       position: fixed;
       font-size: 24px;
       font-weight: 900;
       color: #38bdf8;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+      text-shadow: 0 2px 6px rgba(0,0,0,0.8);
       pointer-events: none;
-      z-index: 50;
-      animation: flyUp 0.75s ease-out forwards;
+      z-index: 999;
+      animation: popUp 0.7s ease-out forwards;
     }
-    @keyframes flyUp {
-      0% { opacity: 1; transform: translate(-50%, 0) scale(0.85); }
-      100% { opacity: 0; transform: translate(-50%, -95px) scale(1.15); }
+    @keyframes popUp {
+      0% { opacity: 1; transform: translate(-50%, 0) scale(0.9); }
+      100% { opacity: 0; transform: translate(-50%, -85px) scale(1.15); }
     }
 
-    /* Модальное окно */
-    #modal-overlay {
+    /* Всплывающее уведомление */
+    #toast {
       position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.75);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-      padding: 20px;
-    }
-    .modal-box {
-      background: #1e293b;
-      border: 1px solid rgba(56, 189, 248, 0.4);
-      border-radius: 20px;
-      padding: 22px;
-      max-width: 320px;
-      width: 100%;
-      text-align: center;
-    }
-    .modal-icon { font-size: 48px; margin-bottom: 8px; }
-    .modal-title { font-size: 19px; font-weight: 800; margin-bottom: 6px; }
-    .modal-text { font-size: 14px; color: #cbd5e1; margin-bottom: 16px; line-height: 1.4; }
-    .modal-btn {
-      width: 100%;
-      background: linear-gradient(135deg, #10b981, #059669);
+      top: 75px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #059669;
       color: #fff;
-      border: none;
-      padding: 12px;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 800;
-      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      z-index: 999;
+      display: none;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
   </style>
 </head>
 <body>
 
+<div class="app">
+  <div id="toast"></div>
+
   <div class="header">
-    <div class="top-actions">
-      <button class="pill-btn" onclick="inviteFriend()">👥 Друзья</button>
-      <div class="rank-badge" id="rank">Ур. 1 • Новичок</div>
-      <button class="pill-btn green" onclick="saveToBot()">💾 В бот</button>
+    <div class="top-bar">
+      <div class="top-btn" id="btn-friends">👥 Друзья</div>
+      <div class="rank-pill" id="rank">Ур. 1 • Новичок</div>
+      <div class="top-btn save" id="btn-save">💾 В бот</div>
     </div>
     <div id="balance">$0</div>
-    <div class="stats-grid">
-      <div class="stat-box">Доход за клик<b id="per-tap">+$1</b></div>
-      <div class="stat-box">Пассивный доход<b id="per-sec">+$0/сек</b></div>
+    <div class="stats">
+      <div class="stat-chip">За клик: <b id="per-tap">+$1</b></div>
+      <div class="stat-chip">Пассивно: <b id="per-sec">+$0/сек</b></div>
     </div>
   </div>
 
-  <div class="tap-area">
-    <div id="turbo-banner">🔥 ТУРБО x2 (<span id="turbo-sec">20</span>с)</div>
-    <div class="coin-wrapper">
-      <div id="coin-btn">💎</div>
-    </div>
-    <div class="energy-box">
-      <div class="energy-header">
+  <div class="center-zone">
+    <div id="turbo-tag">🔥 ТУРБО x2 (<span id="turbo-sec">20</span>с)</div>
+    <div id="coin-btn">💎</div>
+    <div class="energy-wrap">
+      <div class="energy-top">
         <span>⚡ Энергия</span>
-        <span id="energy-label">500 / 500</span>
+        <span id="energy-text">500 / 500</span>
       </div>
-      <div class="energy-track">
-        <div id="energy-fill"></div>
-      </div>
+      <div class="energy-bar"><div id="energy-fill"></div></div>
     </div>
   </div>
 
-  <div class="bottom-sheet">
+  <div class="shop">
     <div class="tabs">
-      <div class="tab-btn active" id="tab-biz" onclick="selectTab('biz')">🏢 Бизнесы</div>
-      <div class="tab-btn" id="tab-tap" onclick="selectTab('tap')">⚡ Прокачка</div>
+      <div class="tab active" data-tab="biz">🏢 Бизнесы</div>
+      <div class="tab" data-tab="tap">⚡ Прокачка</div>
+      <div class="tab" data-tab="bonus">🎁 Бонусы</div>
+    </div>
+    <div class="list" id="shop-list"></div>
+  </div>
+</div>
+
+<script>
+  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+  if (tg && tg.expand) tg.expand();
+
+  const BUSINESSES = [
+    { name: "Кофейный островок", icon: "☕", baseCost: 15, income: 1 },
+    { name: "Автомойка 24/7", icon: "🚗", baseCost: 120, income: 6 },
+    { name: "Майнинг-ферма", icon: "🖥️", baseCost: 750, income: 30 },
+    { name: "Сеть ресторанов", icon: "🍔", baseCost: 3800, income: 135 },
+    { name: "IT-Корпорация", icon: "🚀", baseCost: 18000, income: 620 },
+    { name: "Космодром", icon: "🛸", baseCost: 95000, income: 3100 }
+  ];
+
+  const UPGRADES = [
+    { name: "Сила клика", icon: "👆", baseCost: 30, addTap: 1, addEnergy: 0 },
+    { name: "Запас энергии", icon: "🔋", baseCost: 80, addTap: 0, addEnergy: 250 },
+    { name: "Алмазный палец", icon: "💠", baseCost: 400, addTap: 5, addEnergy: 100 },
+    { name: "Турбо-генератор", icon: "⚡", baseCost: 1500, addTap: 15, addEnergy: 500 }
+  ];
+
+  let state = {
+    balance: 0,
+    totalEarned: 0,
+    tapPower: 1,
+    energy: 500,
+    maxEnergy: 500,
+    bizLevels:,
+    upgLevels:,
+    lastSaveTime: Date.now(),
+    lastDailyTime: 0,
+    lastFreeEnergyTime: 0
+  };
+
+  try {
+    const raw = localStorage.getItem('tycoon_v4');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.balance === 'number') {
+        state = Object.assign(state, parsed);
+      }
+    }
+  } catch (e) {}
+
+  let currentTab = 'biz';
+  let turboEnd = 0;
+
+  function showToast(msg, isError) {
+    const el = document.getElementById('toast');
+    el.innerText = msg;
+    el.style.background = isError ? '#dc2626' : '#059669';
+    el.style.display = 'block';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.display = 'none'; }, 1800);
+  }
+
