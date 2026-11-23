@@ -3,306 +3,265 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Гимнастика на турнике</title>
+  <title>Business Tycoon Clicker</title>
   <script src="https://telegram.org"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
     body {
-      overflow: hidden;
-      background: linear-gradient(180deg, #3a8ee6 0%, #87cefa 65%, #d4f1f9 100%);
-      font-family: Arial, sans-serif;
-    }
-    canvas { display: block; width: 100vw; height: 100vh; }
-
-    #top-hud {
-      position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-      background: rgba(255, 255, 255, 0.8); border-radius: 6px;
-      padding: 4px 12px; font-size: 16px; font-weight: bold; color: #222;
-      z-index: 10; pointer-events: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      white-space: nowrap;
+      background: #0f172a; color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      height: 100vh; display: flex; flex-direction: column; overflow: hidden;
     }
 
-    .left-panel {
-      position: absolute; top: 0; left: 0; width: 21%; height: 100%;
-      display: flex; flex-direction: column; z-index: 10;
+    /* Верхняя панель: Баланс и доход в сек */
+    .header {
+      padding: 14px 16px; background: #1e293b;
+      border-bottom: 1px solid #334155; text-align: center;
+      position: relative;
     }
-    .right-panel {
-      position: absolute; top: 0; right: 0; width: 21%; height: 100%;
-      display: flex; flex-direction: column; z-index: 10;
+    #save-bot-btn {
+      position: absolute; top: 12px; right: 12px;
+      background: #10b981; color: #052e16; border: none;
+      padding: 6px 10px; border-radius: 8px; font-weight: 700; font-size: 12px;
     }
+    .rank-badge {
+      display: inline-block; background: #334155; color: #38bdf8;
+      padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;
+      margin-bottom: 6px;
+    }
+    #balance {
+      font-size: 34px; font-weight: 800; color: #fbbf24;
+      text-shadow: 0 2px 10px rgba(251, 191, 36, 0.25);
+    }
+    .stats-row {
+      display: flex; justify-content: center; gap: 16px;
+      margin-top: 4px; font-size: 13px; color: #94a3b8;
+    }
+    .stats-row span b { color: #34d399; }
 
-    .ctrl-btn {
-      flex: 1; background: rgba(255, 255, 255, 0.28);
-      border: 1px solid rgba(255, 255, 255, 0.55);
+    /* Центральная зона тапа */
+    .tap-area {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; position: relative;
+    }
+    #coin-btn {
+      width: 190px; height: 190px; border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fde047, #f59e0b 65%, #b45309);
+      border: 6px solid #fef08a;
+      box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4), inset 0 -6px 12px rgba(0,0,0,0.3);
       display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: bold; color: #111;
-      text-align: center; padding: 2px; touch-action: manipulation;
-      word-break: break-word;
+      font-size: 76px; transition: transform 0.06s ease;
+      touch-action: manipulation; cursor: pointer;
     }
-    .ctrl-btn:active, .ctrl-btn.active {
-      background: rgba(255, 255, 255, 0.65);
+    #coin-btn:active { transform: scale(0.93); }
+
+    /* Энергия */
+    .energy-box {
+      width: 82%; max-width: 320px; margin-top: 18px;
+    }
+    .energy-text {
+      display: flex; justify-content: space-between;
+      font-size: 12px; color: #cbd5e1; margin-bottom: 4px; font-weight: 600;
+    }
+    .energy-bar {
+      width: 100%; height: 10px; background: #1e293b;
+      border-radius: 6px; overflow: hidden; border: 1px solid #334155;
+    }
+    #energy-fill {
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      transition: width 0.15s ease;
     }
 
-    .bottom-bar {
-      position: absolute; bottom: 8px; left: 22%; right: 22%; height: 38px;
-      display: flex; align-items: center; justify-content: center; gap: 6px;
-      z-index: 10;
+    /* Нижняя панель улучшений (Магазин бизнесов) */
+    .shop-container {
+      height: 44%; background: #1e293b;
+      border-top: 2px solid #334155; border-radius: 18px 18px 0 0;
+      display: flex; flex-direction: column;
     }
-    #btn-slow {
-      background: rgba(255, 255, 255, 0.85); border: 1px solid #999;
-      padding: 6px 10px; border-radius: 4px; font-size: 12px; font-weight: bold;
+    .tabs {
+      display: flex; border-bottom: 1px solid #334155;
     }
-    #btn-slow.active { background: #ffd700; }
-    #btn-save {
-      background: rgba(46, 139, 87, 0.9); color: #fff; border: none;
-      padding: 6px 10px; border-radius: 4px; font-size: 12px; font-weight: bold;
-      white-space: nowrap;
+    .tab {
+      flex: 1; padding: 10px; text-align: center;
+      font-size: 14px; font-weight: 700; color: #94a3b8;
+    }
+    .tab.active {
+      color: #fbbf24; border-bottom: 2px solid #fbbf24;
+    }
+    .upgrades-list {
+      flex: 1; overflow-y: auto; padding: 10px 14px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .upg-card {
+      background: #0f172a; border: 1px solid #334155;
+      border-radius: 12px; padding: 10px 12px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .upg-card.disabled { opacity: 0.5; }
+    .upg-info { display: flex; align-items: center; gap: 10px; }
+    .upg-icon {
+      font-size: 26px; width: 42px; height: 42px;
+      background: #1e293b; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .upg-title { font-size: 14px; font-weight: 700; color: #f1f5f9; }
+    .upg-sub { font-size: 12px; color: #34d399; margin-top: 2px; }
+    .buy-btn {
+      background: #2563eb; color: #fff; border: none;
+      padding: 8px 12px; border-radius: 8px;
+      font-size: 13px; font-weight: 700; min-width: 82px;
+    }
+    .upg-card.disabled .buy-btn { background: #334155; color: #94a3b8; }
+
+    /* Вылетающие цифры при клике */
+    .float-num {
+      position: absolute; font-size: 22px; font-weight: 800;
+      color: #fde047; pointer-events: none;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+      animation: floatUp 0.8s ease-out forwards;
+    }
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-85px) scale(1.25); }
     }
   </style>
 </head>
 <body>
 
-  <div id="top-hud"><span id="score">0</span> перехватов</div>
-
-  <div class="left-panel">
-    <div class="ctrl-btn" id="btn-release">Отпустить</div>
-    <div class="ctrl-btn active" id="btn-stick">Прилипание</div>
-    <div class="ctrl-btn" id="btn-reset" style="flex: 0.45;">Сброс</div>
+  <div class="header">
+    <button id="save-bot-btn">💾 В бот</button>
+    <div class="rank-badge" id="rank">Уровень 1 • Новичок</div>
+    <div id="balance">$0</div>
+    <div class="stats-row">
+      <span>За клик: <b id="per-tap">+$1</b></span>
+      <span>Пассивно: <b id="per-sec">+$0/сек</b></span>
+    </div>
   </div>
 
-  <div class="right-panel">
-    <div class="ctrl-btn" id="btn-arch">Прогиб</div>
-    <div class="ctrl-btn" id="btn-tuck">Группировка</div>
-    <div class="ctrl-btn active" id="btn-straight">Прямое тело</div>
+  <div class="tap-area" id="tap-zone">
+    <div id="coin-btn">💎</div>
+    <div class="energy-box">
+      <div class="energy-text">
+        <span>⚡ Энергия</span>
+        <span id="energy-label">500 / 500</span>
+      </div>
+      <div class="energy-bar"><div id="energy-fill"></div></div>
+    </div>
   </div>
 
-  <div class="bottom-bar">
-    <button id="btn-slow">Замедление</button>
-    <button id="btn-save">💾 В бот</button>
+  <div class="shop-container">
+    <div class="tabs">
+      <div class="tab active" id="tab-biz" onclick="switchTab('biz')">🏢 Бизнесы</div>
+      <div class="tab" id="tab-tap" onclick="switchTab('tap')">⚡ Прокачка клика</div>
+    </div>
+    <div class="upgrades-list" id="shop-list"></div>
   </div>
-
-  <canvas id="game"></canvas>
 
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    const canvas = document.getElementById('game');
-    const ctx = canvas.getContext('2d');
+    // Игровое состояние (загружается из памяти телефона)
+    let state = JSON.parse(localStorage.getItem('tycoon_save_v1')) || {
+      balance: 0,
+      totalEarned: 0,
+      tapPower: 1,
+      energy: 500,
+      maxEnergy: 500,
+      bizLevels:,
+      tapLevels: [0, 0, 0]
+    };
 
-    function resize() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+    let currentTab = 'biz';
+
+    const businesses = [
+      { name: "Ларек с кофе", icon: "☕", baseCost: 25, baseIncome: 1 },
+      { name: "Автомойка 24/7", icon: "🚗", baseCost: 150, baseIncome: 6 },
+      { name: "Майнинг-отель", icon: "🖥️", baseCost: 900, baseIncome: 32 },
+      { name: "IT-Стартап", icon: "🚀", baseCost: 4500, baseIncome: 140 },
+      { name: "Нефтяная вышка", icon: "🛢️", baseCost: 22000, baseIncome: 650 }
+    ];
+
+    const tapUpgrades = [
+      { name: "Мульти-тач палец", icon: "👆", baseCost: 50, addTap: 1, addEnergy: 0 },
+      { name: "Энергетик XL", icon: "🔋", baseCost: 120, addTap: 0, addEnergy: 250 },
+      { name: "Золотой стилус", icon: "✨", baseCost: 500, addTap: 5, addEnergy: 100 }
+    ];
+
+    function formatNum(num) {
+      if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+      if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+      if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+      return Math.floor(num).toLocaleString('ru-RU');
     }
-    window.addEventListener('resize', resize);
-    resize();
 
-    let score = 0;
-    let autoStick = true;
-    let slowMo = false;
-    let pose = 'straight';
+    function getPassiveIncome() {
+      return businesses.reduce((sum, b, idx) => sum + b.baseIncome * state.bizLevels[idx], 0);
+    }
 
-    const bars = [];
-    function initBars() {
-      bars.length = 0;
-      const startX = canvas.width * 0.45;
-      const startY = canvas.height * 0.38;
-      bars.push({ x: startX, y: startY, id: 0 });
-      for (let i = 1; i < 60; i++) {
-        bars.push({
-          x: startX + i * 210 + (Math.random() - 0.5) * 40,
-          y: canvas.height * (0.28 + Math.random() * 0.25),
-          id: i
+    function getRank() {
+      if (state.totalEarned >= 1000000) return "Уровень 5 • Олигарх 👑";
+      if (state.totalEarned >= 100000) return "Уровень 4 • Магнат 💼";
+      if (state.totalEarned >= 15000) return "Уровень 3 • Бизнесмен 📈";
+      if (state.totalEarned >= 1500) return "Уровень 2 • Предприниматель 🏪";
+      return "Уровень 1 • Новичок 🌱";
+    }
+
+    function saveLocal() {
+      localStorage.setItem('tycoon_save_v1', JSON.stringify(state));
+    }
+
+    function updateUI() {
+      document.getElementById('balance').innerText = '$' + formatNum(state.balance);
+      document.getElementById('per-tap').innerText = '+$' + formatNum(state.tapPower);
+      document.getElementById('per-sec').innerText = '+$' + formatNum(getPassiveIncome()) + '/сек';
+      document.getElementById('rank').innerText = getRank();
+
+      document.getElementById('energy-label').innerText = `${Math.floor(state.energy)} / ${state.maxEnergy}`;
+      document.getElementById('energy-fill').style.width = `${(state.energy / state.maxEnergy) * 100}%`;
+
+      renderShop();
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.getElementById('tab-biz').classList.toggle('active', tab === 'biz');
+      document.getElementById('tab-tap').classList.toggle('active', tab === 'tap');
+      renderShop();
+    }
+
+    function renderShop() {
+      const list = document.getElementById('shop-list');
+      list.innerHTML = '';
+
+      if (currentTab === 'biz') {
+        businesses.forEach((b, i) => {
+          const lvl = state.bizLevels[i];
+          const cost = Math.floor(b.baseCost * Math.pow(1.45, lvl));
+          const canBuy = state.balance >= cost;
+
+          const card = document.createElement('div');
+          card.className = 'upg-card' + (canBuy ? '' : ' disabled');
+          card.innerHTML = `
+            <div class="upg-info">
+              <div class="upg-icon">${b.icon}</div>
+              <div>
+                <div class="upg-title">${b.name} <span style="color:#94a3b8;font-size:12px;">(Ур. ${lvl})</span></div>
+                <div class="upg-sub">+$${formatNum(b.baseIncome)}/сек</div>
+              </div>
+            </div>
+            <button class="buy-btn" onclick="buyBiz(${i})">$${formatNum(cost)}</button>
+          `;
+          list.appendChild(card);
         });
-      }
-    }
-
-    const gymnast = {
-      attachedBar: null,
-      angle: 0.2,
-      angVel: 0,
-      x: 0,
-      y: 0,
-      vx: 0,
-      vy: 0,
-      bodyAngle: 0,
-      spinVel: 0,
-      lastBarId: 0
-    };
-
-    function resetGame() {
-      initBars();
-      score = 0;
-      document.getElementById('score').innerText = score;
-      gymnast.attachedBar = bars[0];
-      gymnast.angle = 0.35;
-      gymnast.angVel = 0.05;
-      gymnast.x = bars[0].x;
-      gymnast.y = bars[0].y;
-      gymnast.lastBarId = 0;
-      setPose('straight');
-    }
-
-    function setPose(newPose) {
-      pose = newPose;
-      document.getElementById('btn-arch').classList.toggle('active', pose === 'arch');
-      document.getElementById('btn-tuck').classList.toggle('active', pose === 'tuck');
-      document.getElementById('btn-straight').classList.toggle('active', pose === 'straight');
-    }
-
-    const bindTouch = (id, fn) => {
-      const el = document.getElementById(id);
-      el.addEventListener('touchstart', (e) => { e.preventDefault(); fn(); });
-      el.addEventListener('mousedown', (e) => { e.preventDefault(); fn(); });
-    };
-
-    bindTouch('btn-release', () => {
-      if (gymnast.attachedBar) {
-        const L = getArmBodyLength();
-        const tangentialSpeed = gymnast.angVel * L;
-        gymnast.vx = Math.cos(gymnast.angle) * tangentialSpeed * 1.15;
-        gymnast.vy = -Math.sin(gymnast.angle) * tangentialSpeed * 1.15;
-        gymnast.bodyAngle = gymnast.angle;
-        gymnast.spinVel = gymnast.angVel;
-        gymnast.attachedBar = null;
-      }
-    });
-
-    bindTouch('btn-stick', () => {
-      autoStick = !autoStick;
-      document.getElementById('btn-stick').classList.toggle('active', autoStick);
-    });
-
-    bindTouch('btn-reset', resetGame);
-    bindTouch('btn-arch', () => setPose('arch'));
-    bindTouch('btn-tuck', () => setPose('tuck'));
-    bindTouch('btn-straight', () => setPose('straight'));
-
-    bindTouch('btn-slow', () => {
-      slowMo = !slowMo;
-      document.getElementById('btn-slow').classList.toggle('active', slowMo);
-    });
-
-    document.getElementById('btn-save').addEventListener('click', () => {
-      tg.sendData(JSON.stringify({ action: 'save_gym', score: score }));
-    });
-
-    function getArmBodyLength() {
-      if (pose === 'tuck') return 46;
-      if (pose === 'arch') return 68;
-      return 64;
-    }
-
-    function update() {
-      const dt = slowMo ? 0.35 : 1.0;
-
-      if (gymnast.attachedBar) {
-        const bar = gymnast.attachedBar;
-        const gravity = 0.0042;
-        let pump = 0;
-        if (pose === 'arch') pump = 0.0022 * Math.cos(gymnast.angle);
-        if (pose === 'tuck') pump = -0.0018 * Math.sin(gymnast.angle);
-
-        gymnast.angVel += (-gravity * Math.sin(gymnast.angle) + pump) * dt;
-        gymnast.angVel *= 0.996;
-        gymnast.angle += gymnast.angVel * dt;
-
-        gymnast.x = bar.x;
-        gymnast.y = bar.y;
       } else {
-        gymnast.vy += 0.24 * dt;
-        gymnast.x += gymnast.vx * dt;
-        gymnast.y += gymnast.vy * dt;
+        tapUpgrades.forEach((u, i) => {
+          const lvl = state.tapLevels[i];
+          const cost = Math.floor(u.baseCost * Math.pow(1.6, lvl));
+          const canBuy = state.balance >= cost;
+          let bonusText = [];
+          if (u.addTap) bonusText.push(`+$${u.addTap} к клику`);
+          if (u.addEnergy) bonusText.push(`+${u.addEnergy} энергии`);
 
-        const spinMult = pose === 'tuck' ? 2.2 : (pose === 'arch' ? 0.85 : 1.0);
-        gymnast.bodyAngle += gymnast.spinVel * spinMult * dt;
-
-        if (autoStick) {
-          for (let bar of bars) {
-            if (bar.id !== gymnast.lastBarId) {
-              const dist = Math.hypot(gymnast.x - bar.x, gymnast.y - bar.y);
-              if (dist < 36) {
-                gymnast.attachedBar = bar;
-                gymnast.lastBarId = bar.id;
-                gymnast.angle = Math.atan2(gymnast.x - bar.x, gymnast.y - bar.y);
-                gymnast.angVel = (gymnast.vx * Math.cos(gymnast.angle) - gymnast.vy * Math.sin(gymnast.angle)) / getArmBodyLength();
-                score++;
-                document.getElementById('score').innerText = score;
-                break;
-              }
-            }
-          }
-        }
-
-        if (gymnast.y > canvas.height + 220) {
-          resetGame();
-        }
-      }
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const camX = gymnast.x - canvas.width * 0.45;
-      const camY = (gymnast.y - canvas.height * 0.42) * 0.4;
-
-      ctx.save();
-      ctx.translate(-camX, -camY);
-
-      // Красные конструкции зала на фоне
-      ctx.fillStyle = '#c84b31';
-      for (let gx = -200; gx < 15000; gx += 260) {
-        ctx.fillRect(gx, -300, 12, 1400);
-        ctx.fillRect(gx, canvas.height * 0.22, 260, 10);
-        ctx.fillRect(gx, canvas.height * 0.55, 260, 10);
-      }
-
-      // Перекладины (турники)
-      bars.forEach(bar => {
-        ctx.fillStyle = '#e0e0e0';
-        ctx.fillRect(bar.x - 36, bar.y - 5, 36, 10);
-        ctx.strokeStyle = '#999';
-        ctx.lineWidth = 5;
-        ctx.beginPath();
-        ctx.moveTo(bar.x, bar.y);
-        ctx.lineTo(bar.x + 24, bar.y + 12);
-        ctx.stroke();
-
-        ctx.fillStyle = bar === gymnast.attachedBar ? '#ffd700' : '#ffffff';
-        ctx.beginPath();
-        ctx.arc(bar.x, bar.y, 6, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      // Отрисовка гимнаста
-      ctx.save();
-      ctx.translate(gymnast.x, gymnast.y);
-      const drawAngle = gymnast.attachedBar ? -gymnast.angle : -gymnast.bodyAngle;
-      ctx.rotate(drawAngle);
-
-      ctx.strokeStyle = '#555';
-      ctx.fillStyle = '#666';
-      ctx.lineCap = 'round';
-
-      if (pose === 'tuck') {
-        ctx.lineWidth = 8;
-        ctx.beginPath();
-        ctx.moveTo(0, 0); ctx.lineTo(10, 22);
-        ctx.stroke();
-
-        ctx.lineWidth = 11;
-        ctx.beginPath();
-        ctx.arc(14, 34, 14, 0, Math.PI * 1.5);
-        ctx.stroke();
-
-        ctx.beginPath(); ctx.arc(4, 24, 8, 0, Math.PI * 2); ctx.fill();
-      } else if (pose === 'arch') {
-        ctx.lineWidth = 8;
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-4, 28); ctx.stroke();
-        ctx.lineWidth = 11;
-        ctx.beginPath(); ctx.moveTo(-4, 28); ctx.quadraticCurveTo(12, 48, 2, 68); ctx.stroke();
-        ctx.lineWidth = 8;
-        ctx.beginPath(); ctx.moveTo(2, 68); ctx.lineTo(-10, 96); ctx.stroke();
-        ctx.beginPath(); ctx.arc(6, 26, 8, 0, Math.PI * 2); ctx.fill();
-      } else {
-        ctx.lineWidth = 8;
+          const card = document.createElement('div');
