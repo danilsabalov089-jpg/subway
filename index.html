@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Business Empire Tycoon</title>
   <script src="https://telegram.org"></script>
   <style>
@@ -12,7 +12,6 @@
       padding: 0;
       user-select: none;
       -webkit-user-select: none;
-      -webkit-touch-callout: none;
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -30,15 +29,12 @@
       flex-direction: column;
       height: 100vh;
       height: 100dvh;
-      padding-top: env(safe-area-inset-top, 0px);
-      padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
-    /* Шапка */
     .header {
-      padding: 10px 14px;
+      padding: 12px 14px 10px;
       background: #111827;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid #1e293b;
       text-align: center;
       flex-shrink: 0;
     }
@@ -60,6 +56,7 @@
       font-weight: 700;
       cursor: pointer;
     }
+    .top-btn:active { transform: scale(0.92); }
     .top-btn.save {
       background: #064e3b;
       color: #34d399;
@@ -80,7 +77,6 @@
       font-size: 38px;
       font-weight: 900;
       color: #ffffff;
-      line-height: 1.1;
       margin: 4px 0;
     }
 
@@ -88,7 +84,6 @@
       display: flex;
       justify-content: center;
       gap: 10px;
-      margin-top: 4px;
     }
     .stat-chip {
       background: #1e293b;
@@ -99,7 +94,6 @@
     }
     .stat-chip b { color: #34d399; }
 
-    /* Центральная зона клика */
     .center-zone {
       flex: 1;
       display: flex;
@@ -107,12 +101,11 @@
       align-items: center;
       justify-content: center;
       position: relative;
-      min-height: 210px;
     }
 
     #turbo-tag {
       position: absolute;
-      top: 6px;
+      top: 8px;
       background: linear-gradient(90deg, #f59e0b, #ef4444);
       color: #fff;
       font-size: 12px;
@@ -123,8 +116,8 @@
     }
 
     #coin-btn {
-      width: 164px;
-      height: 164px;
+      width: 166px;
+      height: 166px;
       border-radius: 50%;
       background: radial-gradient(circle at 30% 25%, #38bdf8, #0284c7 65%, #0f172a 100%);
       border: 5px solid #7dd3fc;
@@ -132,16 +125,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 72px;
+      font-size: 74px;
       cursor: pointer;
       transition: transform 0.05s ease;
     }
-    #coin-btn.active { transform: scale(0.9); }
+    #coin-btn:active, #coin-btn.pressed { transform: scale(0.9); }
 
     .energy-wrap {
       width: 84%;
       max-width: 320px;
-      margin-top: 12px;
+      margin-top: 14px;
     }
     .energy-top {
       display: flex;
@@ -164,7 +157,6 @@
       background: linear-gradient(90deg, #38bdf8, #818cf8);
     }
 
-    /* Нижняя панель магазина */
     .shop {
       height: 46%;
       background: #111827;
@@ -192,7 +184,7 @@
     .tab.active {
       color: #38bdf8;
       border-bottom-color: #38bdf8;
-      background: rgba(56, 189, 248, 0.05);
+      background: rgba(56, 189, 248, 0.06);
     }
 
     .list {
@@ -205,12 +197,11 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    /* Вся карточка кликабельна */
     .item-card {
       background: #1e293b;
       border: 1px solid #334155;
       border-radius: 14px;
-      padding: 10px 12px;
+      padding: 11px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -219,14 +210,13 @@
     }
     .item-card:active {
       transform: scale(0.98);
-      background: #263349;
+      background: #27354d;
     }
 
     .item-left {
       display: flex;
       align-items: center;
       gap: 10px;
-      pointer-events: none;
     }
     .item-icon {
       width: 42px;
@@ -262,7 +252,6 @@
       font-weight: 800;
       min-width: 84px;
       text-align: center;
-      pointer-events: none;
     }
     .price-badge.locked {
       background: #0f172a;
@@ -273,7 +262,6 @@
       background: #059669;
     }
 
-    /* Вылетающие цифры */
     .pop-num {
       position: fixed;
       font-size: 24px;
@@ -289,10 +277,9 @@
       100% { opacity: 0; transform: translate(-50%, -85px) scale(1.15); }
     }
 
-    /* Всплывающее уведомление */
     #toast {
       position: fixed;
-      top: 75px;
+      top: 72px;
       left: 50%;
       transform: translateX(-50%);
       background: #059669;
@@ -304,6 +291,7 @@
       z-index: 999;
       display: none;
       box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      white-space: nowrap;
     }
   </style>
 </head>
@@ -314,9 +302,9 @@
 
   <div class="header">
     <div class="top-bar">
-      <div class="top-btn" id="btn-friends">👥 Друзья</div>
+      <button type="button" class="top-btn" onclick="shareGame()">👥 Друзья</button>
       <div class="rank-pill" id="rank">Ур. 1 • Новичок</div>
-      <div class="top-btn save" id="btn-save">💾 В бот</div>
+      <button type="button" class="top-btn save" onclick="sendToBot()">💾 В бот</button>
     </div>
     <div id="balance">$0</div>
     <div class="stats">
@@ -327,7 +315,7 @@
 
   <div class="center-zone">
     <div id="turbo-tag">🔥 ТУРБО x2 (<span id="turbo-sec">20</span>с)</div>
-    <div id="coin-btn">💎</div>
+    <div id="coin-btn" ontouchstart="handleCoinTouch(event)" onmousedown="handleCoinMouse(event)">💎</div>
     <div class="energy-wrap">
       <div class="energy-top">
         <span>⚡ Энергия</span>
@@ -339,33 +327,35 @@
 
   <div class="shop">
     <div class="tabs">
-      <div class="tab active" data-tab="biz">🏢 Бизнесы</div>
-      <div class="tab" data-tab="tap">⚡ Прокачка</div>
-      <div class="tab" data-tab="bonus">🎁 Бонусы</div>
+      <div class="tab active" id="tab-biz" onclick="changeTab('biz')">🏢 Бизнесы</div>
+      <div class="tab" id="tab-tap" onclick="changeTab('tap')">⚡ Прокачка</div>
+      <div class="tab" id="tab-bonus" onclick="changeTab('bonus')">🎁 Бонусы</div>
     </div>
     <div class="list" id="shop-list"></div>
   </div>
 </div>
 
 <script>
-  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-  if (tg && tg.expand) tg.expand();
+  const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+  if (tg && tg.expand) {
+    try { tg.expand(); } catch (e) {}
+  }
 
-  const BUSINESSES = [
+  const BUSINESSES = Array(
     { name: "Кофейный островок", icon: "☕", baseCost: 15, income: 1 },
     { name: "Автомойка 24/7", icon: "🚗", baseCost: 120, income: 6 },
     { name: "Майнинг-ферма", icon: "🖥️", baseCost: 750, income: 30 },
     { name: "Сеть ресторанов", icon: "🍔", baseCost: 3800, income: 135 },
     { name: "IT-Корпорация", icon: "🚀", baseCost: 18000, income: 620 },
     { name: "Космодром", icon: "🛸", baseCost: 95000, income: 3100 }
-  ];
+  );
 
-  const UPGRADES = [
+  const UPGRADES = Array(
     { name: "Сила клика", icon: "👆", baseCost: 30, addTap: 1, addEnergy: 0 },
     { name: "Запас энергии", icon: "🔋", baseCost: 80, addTap: 0, addEnergy: 250 },
     { name: "Алмазный палец", icon: "💠", baseCost: 400, addTap: 5, addEnergy: 100 },
     { name: "Турбо-генератор", icon: "⚡", baseCost: 1500, addTap: 15, addEnergy: 500 }
-  ];
+  );
 
   let state = {
     balance: 0,
@@ -373,15 +363,15 @@
     tapPower: 1,
     energy: 500,
     maxEnergy: 500,
-    bizLevels:,
-    upgLevels:,
+    bizLevels: Array(6).fill(0),
+    upgLevels: Array(4).fill(0),
     lastSaveTime: Date.now(),
     lastDailyTime: 0,
     lastFreeEnergyTime: 0
   };
 
   try {
-    const raw = localStorage.getItem('tycoon_v4');
+    const raw = localStorage.getItem('tycoon_v5');
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed.balance === 'number') {
@@ -399,6 +389,8 @@
     el.style.background = isError ? '#dc2626' : '#059669';
     el.style.display = 'block';
     clearTimeout(el._t);
-    el._t = setTimeout(() => { el.style.display = 'none'; }, 1800);
+    el._t = setTimeout(function() { el.style.display = 'none'; }, 1600);
   }
 
+  function formatNum(n) {
+    if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
