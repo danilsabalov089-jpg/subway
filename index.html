@@ -3,256 +3,302 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GTA SA 3D Lite</title>
+  <title>Гимнастика на турнике</title>
   <script src="https://telegram.org"></script>
-  <script src="https://cloudflare.com"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
-    body { overflow: hidden; background: #87CEEB; font-family: 'Arial', sans-serif; }
-    
-    #hud {
-      position: absolute; top: 12px; right: 15px; text-align: right;
-      font-family: 'Impact', 'Arial Black', sans-serif;
-      text-shadow: 2px 2px 0 #000, -1px -1px 0 #000;
-      pointer-events: none; z-index: 10;
+    body {
+      overflow: hidden;
+      background: linear-gradient(180deg, #3a8ee6 0%, #87cefa 65%, #d4f1f9 100%);
+      font-family: Arial, sans-serif;
     }
-    #money { color: #2e8b57; font-size: 24px; letter-spacing: 1px; }
-    #wanted { color: #ffd700; font-size: 18px; margin-top: 2px; }
-    #hp-bar {
-      width: 110px; height: 10px; background: #400; border: 2px solid #000;
-      margin-left: auto; margin-top: 5px;
-    }
-    #hp-fill { width: 100%; height: 100%; background: #b22222; }
+    canvas { display: block; width: 100vw; height: 100vh; }
 
-    #save-btn {
-      position: absolute; top: 15px; left: 15px; z-index: 10;
-      background: rgba(0, 0, 0, 0.7); color: #fff; border: 1px solid #2e8b57;
-      padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: bold;
+    /* Верхний счётчик перехватов */
+    #top-hud {
+      position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.75); border-radius: 6px;
+      padding: 4px 14px; font-size: 20px; font-weight: bold; color: #222;
+      z-index: 10; pointer-events: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
-    #stick-zone {
-      position: absolute; bottom: 25px; left: 25px; width: 120px; height: 120px;
-      background: rgba(255, 255, 255, 0.15); border: 2px solid rgba(255, 255, 255, 0.4);
-      border-radius: 50%; z-index: 10; touch-action: none;
+    /* Левая панель кнопок */
+    .left-panel {
+      position: absolute; top: 0; left: 0; width: 24%; height: 100%;
+      display: flex; flex-direction: column; z-index: 10;
     }
-    #stick-knob {
-      position: absolute; top: 35px; left: 35px; width: 46px; height: 46px;
-      background: rgba(255, 255, 255, 0.6); border-radius: 50%; pointer-events: none;
+    /* Правая панель кнопок */
+    .right-panel {
+      position: absolute; top: 0; right: 0; width: 24%; height: 100%;
+      display: flex; flex-direction: column; z-index: 10;
     }
 
-    #actions {
-      position: absolute; bottom: 25px; right: 25px; z-index: 10;
-      display: grid; grid-template-columns: repeat(2, 62px); gap: 12px;
+    .ctrl-btn {
+      flex: 1; background: rgba(255, 255, 255, 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: bold; color: #111;
+      text-align: center; padding: 5px; touch-action: manipulation;
     }
-    .act-btn {
-      width: 62px; height: 62px; border-radius: 50%;
-      background: rgba(0, 0, 0, 0.45); border: 2px solid rgba(255, 255, 255, 0.6);
-      color: #fff; font-size: 22px; display: flex; align-items: center; justify-content: center;
-      touch-action: manipulation;
+    .ctrl-btn:active, .ctrl-btn.active {
+      background: rgba(255, 255, 255, 0.65);
     }
-    .act-btn:active { background: rgba(255, 255, 255, 0.4); transform: scale(0.95); }
-    #btn-car { border-color: #ffa500; }
-    #btn-shoot { border-color: #ff4444; }
+
+    /* Нижняя панель (Меню + Замедление) */
+    .bottom-bar {
+      position: absolute; bottom: 0; left: 24%; right: 24%; height: 42px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      z-index: 10;
+    }
+    #btn-slow {
+      background: rgba(255, 255, 255, 0.75); border: 1px solid #999;
+      padding: 6px 14px; border-radius: 4px; font-size: 14px; font-weight: bold;
+    }
+    #btn-slow.active { background: #ffd700; }
+    #btn-save {
+      background: rgba(46, 139, 87, 0.9); color: #fff; border: none;
+      padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold;
+    }
   </style>
 </head>
 <body>
 
-  <button id="save-btn">💾 Сохранить в бот</button>
+  <div id="top-hud"><span id="score">0</span> перехватов</div>
 
-  <div id="hud">
-    <div id="money">$00000250</div>
-    <div id="hp-bar"><div id="hp-fill"></div></div>
-    <div id="wanted">☆☆☆☆☆</div>
+  <div class="left-panel">
+    <div class="ctrl-btn" id="btn-release">Отпустить</div>
+    <div class="ctrl-btn active" id="btn-stick">Прилипание</div>
+    <div class="ctrl-btn" id="btn-reset" style="flex: 0.5;">Сброс</div>
   </div>
 
-  <div id="stick-zone"><div id="stick-knob"></div></div>
-
-  <div id="actions">
-    <div class="act-btn" id="btn-car">🚗</div>
-    <div class="act-btn" id="btn-shoot">🔫</div>
-    <div class="act-btn" id="btn-sprint">🏃</div>
-    <div class="act-btn" id="btn-brake">🛑</div>
+  <div class="right-panel">
+    <div class="ctrl-btn" id="btn-arch">Прогиб</div>
+    <div class="ctrl-btn" id="btn-tuck">Группировка</div>
+    <div class="ctrl-btn active" id="btn-straight">Прямое тело</div>
   </div>
+
+  <div class="bottom-bar">
+    <button id="btn-slow">Замедление</button>
+    <button id="btn-save">💾 В бот</button>
+  </div>
+
+  <canvas id="game"></canvas>
 
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x87CEEB);
-    scene.fog = new THREE.Fog(0x87CEEB, 40, 140);
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
 
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
-    const renderer = new THREE.WebGLRenderer({ antialias: false });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-    document.body.appendChild(renderer.domElement);
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
-    scene.add(ambientLight);
-    const dirLight = new THREE.DirectionalLight(0xfff0dd, 0.8);
-    dirLight.position.set(50, 80, 30);
-    scene.add(dirLight);
-
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(300, 300),
-      new THREE.MeshLambertMaterial({ color: 0x3a5f27 })
-    );
-    ground.rotation.x = -Math.PI / 2;
-    scene.add(ground);
-
-    const roadMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
-    const road1 = new THREE.Mesh(new THREE.PlaneGeometry(16, 260), roadMat);
-    road1.rotation.x = -Math.PI / 2; road1.position.y = 0.02;
-    scene.add(road1);
-
-    const road2 = new THREE.Mesh(new THREE.PlaneGeometry(260, 16), roadMat);
-    road2.rotation.x = -Math.PI / 2; road2.position.y = 0.02;
-    scene.add(road2);
-
-    const culDeSac = new THREE.Mesh(new THREE.CircleGeometry(18, 24), roadMat);
-    culDeSac.rotation.x = -Math.PI / 2; culDeSac.position.set(0, 0.03, -40);
-    scene.add(culDeSac);
-
-    function createHouse(x, z, color) {
-      const h = 6 + Math.random() * 6;
-      const mesh = new THREE.Mesh(
-        new THREE.BoxGeometry(12, h, 12),
-        new THREE.MeshLambertMaterial({ color })
-      );
-      mesh.position.set(x, h / 2, z);
-      scene.add(mesh);
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     }
+    window.addEventListener('resize', resize);
+    resize();
 
-    const colors = [0xd2b48c, 0x8fbc8f, 0xbc8f8f, 0xdeb887];
-    for (let i = -100; i <= 100; i += 28) {
-      if (Math.abs(i) > 15) {
-        createHouse(-20, i, colors[Math.abs(i) % colors.length]);
-        createHouse(20, i, colors[(Math.abs(i) + 1) % colors.length]);
-        createHouse(i, -20, colors[(Math.abs(i) + 2) % colors.length]);
-        createHouse(i, 20, colors[(Math.abs(i) + 3) % colors.length]);
+    // Состояние игры
+    let score = 0;
+    let autoStick = true;
+    let slowMo = false;
+    let pose = 'straight'; // 'arch' (Прогиб), 'tuck' (Группировка), 'straight' (Прямое тело)
+
+    // Турники (перекладины)
+    const bars = [];
+    function initBars() {
+      bars.length = 0;
+      const startX = canvas.width * 0.35;
+      const startY = canvas.height * 0.38;
+      bars.push({ x: startX, y: startY, id: 0 });
+      for (let i = 1; i < 40; i++) {
+        bars.push({
+          x: startX + i * 260 + (Math.random() - 0.5) * 60,
+          y: canvas.height * (0.25 + Math.random() * 0.35),
+          id: i
+        });
       }
     }
 
-    const cj = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.3, 0.5), new THREE.MeshLambertMaterial({ color: 0xffffff }));
-    body.position.y = 1.35;
-    const legs = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.9, 0.45), new THREE.MeshLambertMaterial({ color: 0x1e3f66 }));
-    legs.position.y = 0.45;
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.55), new THREE.MeshLambertMaterial({ color: 0x5c3a21 }));
-    head.position.y = 2.3;
-    cj.add(body, legs, head);
-    cj.position.set(0, 0, -35);
-    scene.add(cj);
+    // Гимнаст
+    const gymnast = {
+      attachedBar: null,
+      angle: Math.PI / 2, // Вниз головой или висит
+      angVel: 0,
+      x: 0,
+      y: 0,
+      vx: 0,
+      vy: 0,
+      bodyAngle: 0,
+      spinVel: 0,
+      lastBarId: 0
+    };
 
-    const car = new THREE.Group();
-    const carBody = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.1, 4.8), new THREE.MeshLambertMaterial({ color: 0x2e8b57 }));
-    carBody.position.y = 0.8;
-    const carCabin = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.8, 2.4), new THREE.MeshLambertMaterial({ color: 0x111111 }));
-    carCabin.position.set(0, 1.6, -0.2);
-    car.add(carBody, carCabin);
-    car.position.set(6, 0, -32);
-    scene.add(car);
-
-    const pickups = [];
-    for (let i = 0; i < 15; i++) {
-      const p = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.4, 0.8), new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
-      p.position.set((Math.random() - 0.5) * 160, 0.6, (Math.random() - 0.5) * 160);
-      scene.add(p);
-      pickups.push(p);
+    function resetGame() {
+      initBars();
+      score = 0;
+      document.getElementById('score').innerText = score;
+      gymnast.attachedBar = bars;
+      gymnast.angle = 0.2;
+      gymnast.angVel = 0.06;
+      gymnast.x = bars.x;
+      gymnast.y = bars.y;
+      gymnast.lastBarId = 0;
+      setPose('straight');
     }
 
-    let money = 250;
-    let wanted = 0;
-    let inCar = false;
-    let carSpeed = 0;
-    let isSprinting = false;
-    let isBraking = false;
-    const bullets = [];
+    // Управление позами
+    function setPose(newPose) {
+      pose = newPose;
+      document.getElementById('btn-arch').classList.toggle('active', pose === 'arch');
+      document.getElementById('btn-tuck').classList.toggle('active', pose === 'tuck');
+      document.getElementById('btn-straight').classList.toggle('active', pose === 'straight');
+    }
 
-    let joyX = 0, joyY = 0;
-    const stickZone = document.getElementById('stick-zone');
-    const stickKnob = document.getElementById('stick-knob');
+    // Привязка кнопок
+    const bindTouch = (id, fn) => {
+      const el = document.getElementById(id);
+      el.addEventListener('touchstart', (e) => { e.preventDefault(); fn(); });
+      el.addEventListener('mousedown', (e) => { e.preventDefault(); fn(); });
+    };
 
-    stickZone.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-      const rect = stickZone.getBoundingClientRect();
-      const touch = e.touches[0];
-      let dx = touch.clientX - (rect.left + 60);
-      let dy = touch.clientY - (rect.top + 60);
-      const dist = Math.min(Math.hypot(dx, dy), 40);
-      const angle = Math.atan2(dy, dx);
-      joyX = (Math.cos(angle) * dist) / 40;
-      joyY = (Math.sin(angle) * dist) / 40;
-      stickKnob.style.transform = `translate(${joyX * 35}px, ${joyY * 35}px)`;
-    });
-
-    stickZone.addEventListener('touchend', () => {
-      joyX = 0; joyY = 0;
-      stickKnob.style.transform = `translate(0px, 0px)`;
-    });
-
-    document.getElementById('btn-car').addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      if (inCar) {
-        inCar = false;
-        cj.visible = true;
-        cj.position.set(car.position.x - 2.5, 0, car.position.z);
-        carSpeed = 0;
-      } else if (cj.position.distanceTo(car.position) < 5) {
-        inCar = true;
-        cj.visible = false;
-        updateHUD();
+    bindTouch('btn-release', () => {
+      if (gymnast.attachedBar) {
+        const L = getArmBodyLength();
+        // Линейная скорость при отрыве от турника
+        const tangentialSpeed = gymnast.angVel * L;
+        gymnast.vx = Math.cos(gymnast.angle) * tangentialSpeed * 1.15;
+        gymnast.vy = -Math.sin(gymnast.angle) * tangentialSpeed * 1.15;
+        gymnast.bodyAngle = gymnast.angle;
+        gymnast.spinVel = gymnast.angVel;
+        gymnast.attachedBar = null;
       }
     });
 
-    document.getElementById('btn-shoot').addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      const actor = inCar ? car : cj;
-      const b = new THREE.Mesh(new THREE.SphereGeometry(0.2), new THREE.MeshBasicMaterial({ color: 0xffff00 }));
-      b.position.copy(actor.position);
-      b.position.y = 1.4;
-      b.rotation.y = actor.rotation.y;
-      scene.add(b);
-      bullets.push({ mesh: b, life: 40 });
-      
-      if (wanted < 5 && Math.random() < 0.25) {
-        wanted++;
-        updateHUD();
-      }
+    bindTouch('btn-stick', () => {
+      autoStick = !autoStick;
+      document.getElementById('btn-stick').classList.toggle('active', autoStick);
     });
 
-    const btnSprint = document.getElementById('btn-sprint');
-    btnSprint.addEventListener('touchstart', (e) => { e.preventDefault(); isSprinting = true; });
-    btnSprint.addEventListener('touchend', () => isSprinting = false);
+    bindTouch('btn-reset', resetGame);
+    bindTouch('btn-arch', () => setPose('arch'));
+    bindTouch('btn-tuck', () => setPose('tuck'));
+    bindTouch('btn-straight', () => setPose('straight'));
 
-    const btnBrake = document.getElementById('btn-brake');
-    btnBrake.addEventListener('touchstart', (e) => { e.preventDefault(); isBraking = true; });
-    btnBrake.addEventListener('touchend', () => isBraking = false);
-
-    document.getElementById('save-btn').addEventListener('click', () => {
-      tg.sendData(JSON.stringify({ action: 'save_gta', money: money, wanted: wanted }));
+    bindTouch('btn-slow', () => {
+      slowMo = !slowMo;
+      document.getElementById('btn-slow').classList.toggle('active', slowMo);
     });
 
-    function updateHUD() {
-      document.getElementById('money').innerText = '$' + String(money).padStart(8, '0');
-      document.getElementById('wanted').innerText = '★'.repeat(wanted) + '☆'.repeat(5 - wanted);
+    document.getElementById('btn-save').addEventListener('click', () => {
+      tg.sendData(JSON.stringify({ action: 'save_gym', score: score }));
+    });
+
+    function getArmBodyLength() {
+      if (pose === 'tuck') return 48; // В группировке радиус меньше — крутится быстрее
+      if (pose === 'arch') return 72;
+      return 68;
     }
 
-    function animate() {
-      requestAnimationFrame(animate);
+    // Физика
+    function update() {
+      const dt = slowMo ? 0.35 : 1.0;
 
-      if (inCar) {
-        if (joyY < -0.1) carSpeed = Math.min(carSpeed + 0.025, 0.85);
-        else if (joyY > 0.1) carSpeed = Math.max(carSpeed - 0.025, -0.35);
-        else carSpeed *= 0.96;
+      if (gymnast.attachedBar) {
+        const bar = gymnast.attachedBar;
+        // Гравитация маятника + раскачка от смены позы (прогиб/группировка)
+        const gravity = 0.0038;
+        let pump = 0;
+        if (pose === 'arch') pump = 0.0018 * Math.cos(gymnast.angle);
+        if (pose === 'tuck') pump = -0.0015 * Math.sin(gymnast.angle);
 
-        if (isBraking) carSpeed *= 0.85;
+        gymnast.angVel += (-gravity * Math.sin(gymnast.angle) + pump) * dt;
+        gymnast.angVel *= 0.996; // Минимальное трение
+        gymnast.angle += gymnast.angVel * dt;
 
-        if (Math.abs(carSpeed) > 0.03) {
-          car.rotation.y -= joyX * 0.045 * Math.sign(carSpeed);
-        }
-        car.position.x -= Math.sin(car.rotation.y) * carSpeed;
-        car.position.z -= Math.cos(car.rotation.y) * carSpeed;
-        cj.position.copy(car.position);
+        gymnast.x = bar.x;
+        gymnast.y = bar.y;
       } else {
+        // Полет в воздухе
+        gymnast.vy += 0.24 * dt; // Сила тяжести
+        gymnast.x += gymnast.vx * dt;
+        gymnast.y += gymnast.vy * dt;
+
+        // В группировке сальто крутится в 2.2 раза быстрее
+        const spinMult = pose === 'tuck' ? 2.2 : (pose === 'arch' ? 0.85 : 1.0);
+        gymnast.bodyAngle += gymnast.spinVel * spinMult * dt;
+
+        // Проверка захвата следующего турника
+        if (autoStick) {
+          for (let bar of bars) {
+            if (bar.id !== gymnast.lastBarId) {
+              const dist = Math.hypot(gymnast.x - bar.x, gymnast.y - bar.y);
+              if (dist < 32) {
+                gymnast.attachedBar = bar;
+                gymnast.lastBarId = bar.id;
+                gymnast.angle = Math.atan2(gymnast.x - bar.x, gymnast.y - bar.y);
+                gymnast.angVel = (gymnast.vx * Math.cos(gymnast.angle) - gymnast.vy * Math.sin(gymnast.angle)) / getArmBodyLength();
+                score++;
+                document.getElementById('score').innerText = score;
+                break;
+              }
+            }
+          }
+        }
+
+        // Если упал слишком низко — сброс
+        if (gymnast.y > canvas.height + 200) {
+          resetGame();
+        }
+      }
+    }
+
+    // Отрисовка
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Камера следит за гимнастом
+      const camX = gymnast.x - canvas.width * 0.45;
+      const camY = (gymnast.y - canvas.height * 0.45) * 0.4;
+
+      ctx.save();
+      ctx.translate(-camX, -camY);
+
+      // Красные конструкции зала на фоне (как на скриншоте)
+      ctx.fillStyle = '#c84b31';
+      for (let gx = -200; gx < 12000; gx += 320) {
+        ctx.fillRect(gx, -300, 14, 1200);
+        ctx.fillRect(gx, 140, 320, 12);
+        ctx.fillRect(gx, 360, 320, 12);
+      }
+
+      // Перекладины (турники)
+      bars.forEach(bar => {
+        // Стойка
+        ctx.fillStyle = '#e0e0e0';
+        ctx.fillRect(bar.x - 45, bar.y - 6, 45, 12);
+        // Сама перекладина
+        ctx.strokeStyle = '#999';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(bar.x, bar.y);
+        ctx.lineTo(bar.x + 28, bar.y + 14);
+        ctx.stroke();
+
+        // Точка захвата
+        ctx.fillStyle = bar === gymnast.attachedBar ? '#ffd700' : '#ffffff';
+        ctx.beginPath();
+        ctx.arc(bar.x, bar.y, 6, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Отрисовка гимнаста (серая модель с суставами как на скриншоте)
+      ctx.save();
+      ctx.translate(gymnast.x, gymnast.y);
+      const drawAngle = gymnast.attachedBar ? -gymnast.angle : -gymnast.bodyAngle;
+      ctx.rotate(drawAngle);
+
+      ctx.strokeStyle = '#666';
+      ctx.fillStyle = '#777';
+      ctx.lineCap = 'round';
+
